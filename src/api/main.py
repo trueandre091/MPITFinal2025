@@ -4,6 +4,7 @@ from api.settings import get_settings
 from api.database import create_db
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
+from api.seeds.run_seeds import run_all_seeds
 
 from api.routers import auth
 
@@ -15,11 +16,15 @@ async def lifespan(app: FastAPI):
     if not settings.DB_CREATED:
         create_db()
         settings.DB_CREATED = True
+
+    run_all_seeds()
+    
     yield
 
 
 app = FastAPI(title="API", lifespan=lifespan)
 
+# Настройка CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

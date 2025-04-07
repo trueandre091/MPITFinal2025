@@ -7,7 +7,6 @@ from alembic import context
 
 import sys
 import os
-
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 # Импортируем модели и настройки из нашего проекта
@@ -16,8 +15,8 @@ from models.user import User
 from models.leader import Leader
 from models.request import Request
 from models.config import Config
+from models.admin import Admin
 from models.esia_token import EsiaToken
-
 # Импортируйте здесь другие модели, если они есть
 
 # this is the Alembic Config object, which provides
@@ -83,12 +82,12 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection,
+            connection=connection, 
             target_metadata=target_metadata,
             # Добавляем сравнение типов для корректной работы автогенерации
             compare_type=True,
             # Добавляем сравнение значений по умолчанию
-            compare_server_default=True,
+            compare_server_default=True
         )
 
         with context.begin_transaction():

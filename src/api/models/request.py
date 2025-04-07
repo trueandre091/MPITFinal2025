@@ -12,28 +12,25 @@ from api.database import Base
 from datetime import datetime, UTC
 from random import randint
 
-
 class Request(Base):
     __tablename__ = "requests"
 
     id = Column(BigInteger, primary_key=True, index=True)
-    user_id = Column(BigInteger, ForeignKey("users.id"))
-    responder_id = Column(BigInteger, ForeignKey("leaders.id"), default=None)
-    theme = Column(String, default="")
-    message = Column(String, default="")    
+    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    leader_id = Column(BigInteger, ForeignKey("leaders.id"), nullable=True)
+    theme = Column(String, nullable=False)
+    message = Column(String, nullable=False)
     is_closed = Column(Boolean, default=False)
-    rating = Column(Integer, default=0)
+    rating = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.now(UTC))
     updated_at = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
 
-    user = relationship("User", foreign_keys=[user_id], back_populates="user_requests")
-    responder = relationship(
-        "Leader", foreign_keys=[responder_id], back_populates="responder_requests"
-    )
+    leader = relationship("Leader", back_populates="requests")
+    user = relationship("User", back_populates="requests")
 
     @classmethod
-    def create(cls, db: Session, user_id: int, theme: str, **kwargs):
-        db_request = cls(id=cls._get_unique_id(db), user_id=user_id, theme=theme)
+    def create(cls, db: Session, user_id: int, theme: str, message: str, **kwargs):
+        db_request = cls(id=cls._get_unique_id(db), user_id=user_id, theme=theme, message=message)
         for key, value in kwargs.items():
             if key not in [attr.name for attr in cls.__table__.columns]:
                 continue
@@ -42,19 +39,18 @@ class Request(Base):
         db.commit()
         db.refresh(db_request)
         return db_request
-
+    
+    @classmethod
+    def _get_unique_id(cls, db: Session):
+        while True:
+            id = randint(10**7, 10**10)
+            if not cls.get_by_id(db, id):
+                return id
+    
     @classmethod
     def get_by_id(cls, db: Session, id: int):
         return db.query(cls).filter(cls.id == id).first()
-
-    @classmethod
-    def get_by_user_id(cls, db: Session, user_id: int):
-        return db.query(cls).filter(cls.user_id == user_id).all()
-
-    @classmethod
-    def get_by_responder_id(cls, db: Session, responder_id: int):
-        return db.query(cls).filter(cls.responder_id == responder_id).all()
-
+    
     @classmethod
     def update(cls, db: Session, id: int, **kwargs):
         db_request = db.query(cls).filter(cls.id == id).first()
@@ -65,10 +61,4 @@ class Request(Base):
         db.commit()
         db.refresh(db_request)
         return db_request
-
-    @classmethod
-    def _get_unique_id(cls, db: Session):
-        while True:
-            id = randint(10**7, 10**10)
-            if not cls.get_by_id(db, id):
-                return id
+    

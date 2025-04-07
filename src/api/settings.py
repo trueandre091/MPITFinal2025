@@ -15,6 +15,8 @@ class Settings:
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-here")
     TOKEN_EXPIRE_MINUTES: int = int(os.getenv("TOKEN_EXPIRE_MINUTES", 5))
     
+    MAIN_ADMIN_TG_ID: int = int(os.getenv("MAIN_ADMIN_TG_ID", 123456789))
+    SHOULD_SEED_ADMIN: bool = os.getenv("SHOULD_SEED_ADMIN", "true").lower() == "true"
 
 @lru_cache
 def get_settings():

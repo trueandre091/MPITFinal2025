@@ -12,7 +12,6 @@ from api.models.user import User
 settings = get_settings()
 security = HTTPBearer()
 
-
 class AuthService:
     def __init__(self):
         self.secret_key = settings.SECRET_KEY
@@ -21,23 +20,25 @@ class AuthService:
     def create_token(self, data: dict):
         to_encode = data.copy()
         expire = datetime.now(UTC) + timedelta(minutes=self.token_expire_minutes)
-        to_encode.update(
-            {
-                "exp": expire,
-                "iat": datetime.now(UTC),
-                "jti": os.urandom(8).hex(),
-            }
+        to_encode.update({
+            "exp": expire,
+            "iat": datetime.now(UTC),
+            "jti": os.urandom(8).hex(),
+        })
+
+        return jwt.encode(
+            to_encode,
+            self.secret_key,
+            algorithm="HS256"
         )
-
-        return jwt.encode(to_encode, self.secret_key, algorithm="HS256")
-
+    
     def verify_token(self, token: str):
         try:
             payload = jwt.decode(
                 token,
                 self.secret_key,
                 algorithms=["HS256"],
-                options={"verify_exp": True},
+                options={"verify_exp": True}
             )
 
             if not all(key in payload for key in ["sub", "exp", "iat", "jti"]):
@@ -49,11 +50,10 @@ class AuthService:
         except jwt.JWTError as e:
             print(e)
             raise HTTPException(status_code=403, detail="Error while decoding token")
-
+    
     def verify_user(
-        self,
-        HTTPAuthorizationCredentials: HTTPAuthorizationCredentials = Depends(security),
-        db: Session = Depends(get_db),
+        self, HTTPAuthorizationCredentials: HTTPAuthorizationCredentials = Depends(security),
+        db: Session = Depends(get_db)
     ):
         token = HTTPAuthorizationCredentials.credentials
         payload = self.verify_token(token)
@@ -64,3 +64,5 @@ class AuthService:
         if not user.is_active:
             raise HTTPException(status_code=403, detail="User logged out")
         return user
+
+

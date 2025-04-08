@@ -18,6 +18,8 @@ class Settings:
     MAIN_ADMIN_TG_ID: int = int(os.getenv("MAIN_ADMIN_TG_ID", 123456789))
     SHOULD_SEED_ADMIN: bool = os.getenv("SHOULD_SEED_ADMIN", "true").lower() == "true"
 
+    WEB_APP_URL: str = os.getenv("WEB_APP_URL", "http://localhost:3000")
+
 @lru_cache
 def get_settings():
     return Settings()

@@ -16,6 +16,10 @@ class Region(Base):
         return db.query(cls).filter(cls.id == id).first()
 
     @classmethod
+    def get_by_name(cls, db: Session, name: str):
+        return db.query(cls).filter(cls.name == name).first()
+
+    @classmethod
     def get_all(cls, db: Session):
         return [cls._to_dict(region) for region in db.query(cls).all()]
     

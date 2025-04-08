@@ -117,10 +117,15 @@ def rate_buttons(request_id: int):
     return buttons
 
 
-def back_buttons():
+def back_buttons(request_id: int = None):
     buttons = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Главное меню", callback_data="main")]
+            [
+                InlineKeyboardButton(
+                    text="Главное меню",
+                    callback_data=("main" if not request_id else f"main_{request_id}"),
+                )
+            ]
         ]
     )
     return buttons

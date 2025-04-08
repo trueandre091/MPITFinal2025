@@ -131,31 +131,42 @@ async def admin_choose_chat_handler(message: types.Message, state: FSMContext):
 
 @dp.message(UserState.admin_choose_leader)
 async def admin_choose_leader_handler(message: types.Message, state: FSMContext):
+    db = next(get_db())
     user = message.user_shared
     if user:
+        if Leader.get_by_tg_id(db, user.user_id):
+            answer = await message.answer(
+                CONTENT[ADMIN_FUNCTIONS[1]]["errors"][2],
+                parse_mode="HTML",
+            )
+            await message.chat.delete_message(answer.message_id - 1)
+            await message.chat.delete_message(answer.message_id - 2)
+            await asyncio.sleep(2)
+            await answer.delete()
+            await state.clear()
+            await state.set_state(UserState.main)
+            return
+
         answer = await message.answer(
             CONTENT[ADMIN_FUNCTIONS[1]]["messages"][1],
             reply_markup=types.ReplyKeyboardRemove(),
             parse_mode="HTML",
         )
 
-        db = next(get_db())
-        Leader.create(db, user.user_id)
+        await state.update_data(leader_tg_id=user.user_id)
 
         await asyncio.sleep(1)
         await answer.delete()
 
         await message.chat.delete_message(answer.message_id - 2)
 
-        answer = await message.answer(
-            CONTENT[ADMIN_FUNCTIONS[1]]["messages"][2],
+        await message.answer(
+            CONTENT[ADMIN_FUNCTIONS[1]]["messages"][3],
             reply_markup=types.ReplyKeyboardRemove(),
-            parse_mode="HTML",
+            parse_mode="HTML",  
         )
-        await asyncio.sleep(2)
-        await answer.delete()
 
-        await state.set_state(UserState.main)
+        await state.set_state(UserState.admin_leader_name)
     else:
         answer = await message.answer(
             CONTENT[ADMIN_FUNCTIONS[1]]["errors"][0],
@@ -164,7 +175,47 @@ async def admin_choose_leader_handler(message: types.Message, state: FSMContext)
         )
         await asyncio.sleep(2)
         await answer.delete()
+        await state.clear()
+        await state.set_state(UserState.main)
         return
+
+
+@dp.message(UserState.admin_leader_name)
+async def admin_leader_name_handler(message: types.Message, state: FSMContext):
+    if message.text:
+        answer = await message.answer(
+            CONTENT[ADMIN_FUNCTIONS[1]]["messages"][1],
+            reply_markup=types.ReplyKeyboardRemove(),
+            parse_mode="HTML",
+        )
+
+        db = next(get_db())
+        data = await state.get_data()
+        Leader.create(db, data["leader_tg_id"], message.text)
+
+        await asyncio.sleep(1)
+        await answer.delete()
+
+        answer = await message.answer(
+            CONTENT[ADMIN_FUNCTIONS[1]]["messages"][2],
+            reply_markup=back_buttons(),
+            parse_mode="HTML",  
+        )
+        await asyncio.sleep(2)
+        await answer.delete()
+        await state.set_state(UserState.main)
+    else:
+        answer = await message.answer(
+            CONTENT[ADMIN_FUNCTIONS[1]]["errors"][0],
+            reply_markup=types.ReplyKeyboardRemove(),
+            parse_mode="HTML",
+        )
+        await asyncio.sleep(2)
+        await answer.delete()
+        await state.clear()
+        await state.set_state(UserState.main)
+        return
+
 
 
 @dp.message(UserState.admin_exclude_leader)

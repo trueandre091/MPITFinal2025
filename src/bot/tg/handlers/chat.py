@@ -80,20 +80,23 @@ async def confirm_answer_handler(callback: types.CallbackQuery, state: FSMContex
 
         if callback_data[3] == "respond":
             await callback.message.chat.delete_message(int(callback_data[2]))
-            await callback.message.answer(
+            answer = await callback.message.answer(
                 CONTENT["respond"]["messages"][0].format(
-                    name=request.user.name, leader_name=leader.name
+                    name=request.user.name, leader_name=callback.from_user.first_name
                 ),
                 parse_mode="HTML",
                 reply_markup=respond_buttons((await bot.get_me()).username, request.id),
             )
             Request.update(db, request.id, leader_id=leader.id)
 
+            await asyncio.sleep(10)
+            await answer.delete()
+
         elif callback_data[3] == "reject":
             await callback.message.chat.delete_message(int(callback_data[2]))
             await callback.message.answer(
                 CONTENT["reject"]["messages"][0].format(
-                    name=request.user.name, leader_name=leader.name
+                    name=request.user.name, leader_name=callback.from_user.first_name
                 ),
                 parse_mode="HTML",
             )

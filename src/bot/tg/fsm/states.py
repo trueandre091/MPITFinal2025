@@ -15,4 +15,5 @@ class UserState(StatesGroup):
 
     admin_choose_chat = State()
     admin_choose_leader = State()
+    admin_leader_name = State()
     admin_exclude_leader = State()

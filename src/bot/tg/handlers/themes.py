@@ -13,6 +13,7 @@ from api.models.config import Config
 from api.models.request import Request
 from api.models.user import User
 from api.database import get_db
+from api.settings import get_settings
 
 logger = get_logger(__name__)
 

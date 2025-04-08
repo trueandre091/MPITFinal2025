@@ -29,7 +29,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -42,18 +42,10 @@ async def root():
     return {"detail": "Hello World"}
 
 
-@app.on_event("startup")
-async def startup_db_client():
-    # Существующий код инициализации...
-    
-    # Запускаем заполнение базы данных при запуске приложения
-    run_all_seeds()
-
-
 async def start_api():
     import uvicorn
 
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000)
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, reload=True)
     server = uvicorn.Server(config)
     await server.serve()
 

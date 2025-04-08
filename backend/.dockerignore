@@ -1,0 +1,18 @@
+# Системы контроля версий
+.git
+.gitignore
+
+# Python кеш
+__pycache__/
+*.py[cod]
+
+# Переменные окружения
+.env.bot
+.env.api
+
+# Docker файлы
+Dockerfile
+
+# Файлы IDE (если используете)
+.idea/
+.vscode/

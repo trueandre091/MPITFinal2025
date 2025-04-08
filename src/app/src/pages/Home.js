@@ -11,6 +11,8 @@ import { LogoutOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import GeneralBackground from "../components/GeneralBackground";
 import PageTransition from "../components/PageTransition";
+import HeroDesk from "../components/HeroDesk";
+import OftenQuestions from "../components/OftenQuestions";
 
 import redLeaves from "../assets/RedLeaves.png";
 import redLine from "../assets/RedLine.png";
@@ -359,6 +361,40 @@ const Home = () => {
 								>
 									Количество участников
 								</Typography>
+							</Box>
+						</Box>
+						<Box display="flex" flexDirection="column" gap={3}>
+							<Typography
+								align="start"
+								color="common.black"
+								fontWeight={500}
+								lineHeight={0.6}
+								fontSize={130}
+								letterSpacing={8}
+								sx={{ userselect: "none", marginTop: "50px" }}
+								fontFamily="Highliner"
+							>
+								На них равняются
+							</Typography>
+							<Box sx={{ marginTop: "50px" }}>
+								<HeroDesk />
+							</Box>
+						</Box>
+						<Box display="flex" flexDirection="column" gap={3}>
+							<Typography
+								align="start"
+								color="common.black"
+								fontWeight={500}
+								lineHeight={0.6}
+								fontSize={130}
+								letterSpacing={8}
+								sx={{ userselect: "none", marginTop: "-50px" }}
+								fontFamily="Highliner"
+							>
+								Часто задаваемые вопросы
+							</Typography>
+							<Box sx={{ marginTop: "50px" }}>
+								<OftenQuestions />
 							</Box>
 						</Box>
 					</Box>

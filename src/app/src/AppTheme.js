@@ -30,7 +30,7 @@ const AppTheme = createTheme({
 			dark: "#555A78",
 		},
 		secondary: {
-			main: "#6D714F",
+			main: "#D6CFAD",
 			light: "#EAE7D6",
 			dark: "#365378",
 		},

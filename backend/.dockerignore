@@ -1,0 +1,14 @@
+# Системы контроля версий
+.git
+.gitignore
+
+# Python кеш
+__pycache__/
+*.py[cod]
+
+# Docker файлы
+Dockerfile
+
+# Файлы IDE (если используете)
+.idea/
+.vscode/

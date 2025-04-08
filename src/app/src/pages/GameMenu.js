@@ -1,9 +1,10 @@
 import React, { useRef, useEffect, useState } from "react";
 import GeneralBackground from "../components/GeneralBackground";
 import PageTransition from "../components/PageTransition";
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, Button, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Auth from "../api/auth";
+import { ArrowBack } from "@mui/icons-material";
 
 import home1 from "../assets/Home1.gif";
 import home2 from "../assets/Home2.gif";
@@ -11,6 +12,8 @@ import home3 from "../assets/Home3.gif";
 import home4 from "../assets/Home4.gif";
 import gameBackground from "../assets/GameBackground.png";
 import redLine from "../assets/RedLine.png";
+import redHorse from "../assets/RedHorse.png";
+import redHorseGif from "../assets/RedHorse.gif";
 import ExcToMoskow from "../assets/ExcToMoskow.png";
 import Informbureau from "../assets/Informbureau.png";
 import InMySphere from "../assets/InMySphere.png";
@@ -23,7 +26,41 @@ import GetInfoSupport from "../assets/GetInfoSupport.png";
 const GameMenu = () => {
 	const navigate = useNavigate();
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [destination, setDestination] = useState("/game-menu");
 	const authRef = useRef(null);
+	const hasNavigatedRef = useRef(false);
+	const timersRef = useRef([]);
+
+	// Состояния для анимации коня
+	const [horsePosition, setHorsePosition] = useState({
+		left: "65%",
+		top: "44%",
+		transition: "none",
+		transform: "scaleX(1)",
+		opacity: 1,
+	});
+	const [isAnimating, setIsAnimating] = useState(false);
+
+	// Функция для очистки всех таймеров
+	const clearAllTimers = () => {
+		timersRef.current.forEach((timerId) => clearTimeout(timerId));
+		timersRef.current = [];
+	};
+
+	// Функция для безопасного перехода - проверяет, не был ли уже совершен переход
+	const safeNavigate = (path) => {
+		if (!hasNavigatedRef.current) {
+			hasNavigatedRef.current = true;
+			navigate(path);
+		}
+	};
+
+	// Сбрасываем флаг перехода при размонтировании компонента
+	useEffect(() => {
+		return () => {
+			clearAllTimers(); // Очищаем все таймеры при размонтировании
+		};
+	}, []);
 
 	if (authRef.current === null) {
 		authRef.current = new Auth();
@@ -48,31 +85,146 @@ const GameMenu = () => {
 		validateToken();
 	}, []);
 
+	// Функция для анимации коня к определенным координатам
+	const animateHorse = (path) => {
+		if (isAnimating) return;
+
+		setIsAnimating(true);
+		hasNavigatedRef.current = false; // Сбрасываем флаг перехода при начале новой анимации
+		clearAllTimers(); // Очищаем предыдущие таймеры
+
+		setHorsePosition({
+			...horsePosition,
+			transition: "none",
+			opacity: 1,
+			left: "63%",
+			top: "41%",
+		});
+
+		const initialTimerId = setTimeout(() => {
+			let points = [];
+
+			switch (path) {
+				case "informbureau":
+					points = [
+						{ left: "63%", top: "35%", transform: "scaleX(1)" },
+						{ left: "69%", top: "33%", transform: "scaleX(1)" },
+						{ left: "45%", top: "30%", transform: "scaleX(-1)" },
+						{ left: "40%", top: "18%", transform: "scaleX(-1)" },
+						{ left: "33%", top: "15%", transform: "scaleX(-1)" },
+						{ left: "20%", top: "18%", transform: "scaleX(-1)" },
+						{ left: "15%", top: "22%", transform: "scaleX(-1)" },
+						{ left: "5%", top: "18%", transform: "scaleX(-1)" },
+						{ left: "10%", top: "10%", transform: "scaleX(1)" },
+					];
+					break;
+				case "in-my-sphere":
+					points = [
+						{ left: "63%", top: "35%", transform: "scaleX(1)" },
+						{ left: "73%", top: "36%", transform: "scaleX(1)" },
+						{ left: "78%", top: "30%", transform: "scaleX(1)" },
+						{ left: "60%", top: "30%", transform: "scaleX(-1)" },
+						{ left: "66%", top: "25%", transform: "scaleX(-1)" },
+					];
+					break;
+				case "show-me-moskow":
+					points = [
+						{ left: "57%", top: "46%", transform: "scaleX(-1)" },
+						{ left: "57%", top: "50%", transform: "scaleX(-1)" },
+						{ left: "48%", top: "53%", transform: "scaleX(-1)" },
+						{ left: "40%", top: "54%", transform: "scaleX(-1)" },
+						{ left: "25%", top: "55%", transform: "scaleX(-1)" },
+						{ left: "10%", top: "56%", transform: "scaleX(-1)" },
+						{ left: "11%", top: "54%", transform: "scaleX(1)" },
+						{ left: "20%", top: "51%", transform: "scaleX(1)" },
+						{ left: "30%", top: "50%", transform: "scaleX(1)" },
+						{ left: "25%", top: "40%", transform: "scaleX(-1)" },
+					];
+					break;
+				case "moskow-duty-officer":
+					points = [
+						{ left: "65%", top: "46%", transform: "scaleX(-1)" },
+						{ left: "64%", top: "50%", transform: "scaleX(-1)" },
+						{ left: "55%", top: "55%", transform: "scaleX(-1)" },
+						{ left: "40%", top: "60%", transform: "scaleX(-1)" },
+						{ left: "16%", top: "60%", transform: "scaleX(-1)" },
+						{ left: "11%", top: "66%", transform: "scaleX(-1)" },
+						{ left: "14%", top: "71%", transform: "scaleX(1)" },
+						{ left: "20%", top: "71%", transform: "scaleX(1)" },
+						{ left: "40%", top: "74%", transform: "scaleX(1)" },
+						{ left: "50%", top: "75%", transform: "scaleX(1)" },
+						{ left: "77%", top: "78%", transform: "scaleX(1)" },
+						{ left: "66%", top: "65%", transform: "scaleX(-1)" },
+					];
+					break;
+				default:
+					points = [];
+			}
+
+			// Функция для последовательной анимации через точки
+			const animateSequence = (index) => {
+				if (index >= points.length) {
+					// После завершения анимации переходим на страницу только если не было перехода ранее
+					const finalTimerId = setTimeout(() => {
+						if (!hasNavigatedRef.current) {
+							safeNavigate(destination);
+						}
+						setIsAnimating(false);
+						// Скрываем коня после завершения анимации
+						setHorsePosition({
+							...horsePosition,
+							opacity: 0,
+						});
+					}, 300);
+					timersRef.current.push(finalTimerId);
+					return;
+				}
+
+				// Устанавливаем transition для плавной анимации
+				setHorsePosition({
+					...points[index],
+					transition: "all 0.6s ease-in-out",
+					opacity: 1,
+					zIndex: 10,
+				});
+
+				// Переходим к следующей точке через задержку
+				const nextTimerId = setTimeout(() => animateSequence(index + 1), 600);
+				timersRef.current.push(nextTimerId);
+			};
+
+			// Запускаем анимацию
+			animateSequence(0);
+		}, 50);
+
+		timersRef.current.push(initialTimerId);
+	};
+
+	// Обработчики нажатия на дома с анимацией
+	const handleHome1Click = () => {
+		animateHorse("in-my-sphere");
+		setDestination("/in-my-sphere");
+	};
+
+	const handleHome2Click = () => {
+		animateHorse("show-me-moskow");
+		setDestination("/show-me-moskow");
+	};
+
+	const handleHome3Click = () => {
+		animateHorse("moskow-duty-officer");
+		setDestination("/moskow-duty-officer");
+	};
+
+	const handleHome4Click = () => {
+		animateHorse("informbureau");
+		setDestination("/informbureau");
+	};
+
 	return (
 		<GeneralBackground>
 			<PageTransition>
 				<Box>
-					<Box
-						sx={{
-							position: "absolute",
-							width: "100%",
-							height: "9%",
-							display: "flex",
-							flexDirection: "column",
-							justifyContent: "center",
-							userselect: "none",
-							cursor: "default",
-							outline: "none",
-							caretColor: "transparent",
-						}}
-						tabIndex="-1"
-					>
-						<Box
-							component="img"
-							src={redLine}
-							sx={{ width: "auto", height: "100%" }}
-						/>
-					</Box>
 					<Box
 						sx={{
 							position: "absolute",
@@ -96,7 +248,7 @@ const GameMenu = () => {
 								position: "relative",
 								width: "auto",
 								height: "100%",
-								top: "4%",
+								top: "3%",
 								zIndex: 0,
 								userselect: "none",
 								outline: "none",
@@ -126,9 +278,50 @@ const GameMenu = () => {
 									transformOrigin: "center",
 								}}
 							/>
+							{isAnimating ? (
+								<Box
+									component="img"
+									src={redHorseGif}
+									onClick={() => {
+										clearAllTimers(); // Очищаем таймеры при клике на лошадь
+										safeNavigate(destination); // Используем безопасную навигацию
+									}}
+									sx={{
+										position: "absolute",
+										width: "auto",
+										height: "7%",
+										zIndex: 5,
+										...horsePosition,
+										userselect: "none",
+										pointerEvents: "auto",
+										filter: "drop-shadow(0px 3px 5px rgba(0,0,0,0.3))",
+										cursor: "pointer",
+									}}
+								/>
+							) : (
+								<Box
+									component="img"
+									src={redHorse}
+									onClick={() => {
+										clearAllTimers(); // Очищаем таймеры при клике на лошадь
+										safeNavigate(destination); // Используем безопасную навигацию
+									}}
+									sx={{
+										position: "absolute",
+										width: "auto",
+										height: "5%",
+										zIndex: 5,
+										...horsePosition,
+										userselect: "none",
+										pointerEvents: "auto",
+										filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))",
+										cursor: "pointer",
+									}}
+								/>
+							)}
 							<Box
 								component="img"
-								onClick={() => navigate("/informbureau")}
+								onClick={handleHome4Click}
 								src={home4}
 								sx={{
 									position: "absolute",
@@ -139,6 +332,7 @@ const GameMenu = () => {
 									zIndex: 1,
 									userselect: "none",
 									transform: "scaleX(-1)",
+									cursor: "pointer",
 								}}
 							/>
 							<Box
@@ -171,7 +365,7 @@ const GameMenu = () => {
 							<Box
 								component="img"
 								src={home1}
-								onClick={() => navigate("/in-my-sphere")}
+								onClick={handleHome1Click}
 								sx={{
 									position: "absolute",
 									width: "auto",
@@ -212,7 +406,7 @@ const GameMenu = () => {
 
 							<Box
 								component="img"
-								onClick={() => navigate("/show-me-moskow")}
+								onClick={handleHome2Click}
 								src={home2}
 								sx={{
 									position: "absolute",
@@ -254,7 +448,7 @@ const GameMenu = () => {
 
 							<Box
 								component="img"
-								onClick={() => navigate("/moskow-duty-officer")}
+								onClick={handleHome3Click}
 								src={home3}
 								sx={{
 									position: "absolute",
@@ -264,6 +458,7 @@ const GameMenu = () => {
 									left: "51%",
 									zIndex: 1,
 									userselect: "none",
+									cursor: "pointer",
 								}}
 							/>
 							<Box
@@ -303,18 +498,24 @@ const GameMenu = () => {
 								justifyContent: "center",
 								userselect: "none",
 								cursor: "default",
-								top: "90%",
+								top: "85%",
 								userselect: "none",
 								outline: "none",
 								caretColor: "transparent",
 							}}
 							tabIndex="-1"
 						>
-							<Box
-								component="img"
-								src={redLine}
-								sx={{ width: "auto", height: "100%" }}
-							/>
+							<IconButton
+								onClick={() => navigate("/")}
+								disabled={isAnimating}
+								sx={{
+									position: "absolute",
+									top: "0",
+									left: "8%",
+								}}
+							>
+								<ArrowBack sx={{ fontSize: 30 }} />
+							</IconButton>
 						</Box>
 					</Box>
 				</Box>

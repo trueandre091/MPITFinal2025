@@ -327,7 +327,7 @@ const InMySphere = () => {
 						</Typography>
 
 						<TextField
-							label="Имя"
+							label="Поиск"
 							variant="outlined"
 							sx={{ width: "100%", marginBottom: 2, borderRadius: 20 }}
 						/>

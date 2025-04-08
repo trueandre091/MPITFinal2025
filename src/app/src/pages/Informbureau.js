@@ -8,8 +8,15 @@ import {
 	Snackbar,
 	Alert,
 	TextField,
+	Card,
+	CardContent,
+	List,
+	ListItem,
+	ListItemText,
+	Divider,
+	Fade,
 } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
+import { ArrowBack, ExpandMore } from "@mui/icons-material";
 import GeneralBackground from "../components/GeneralBackground";
 import PageTransition from "../components/PageTransition";
 
@@ -19,17 +26,32 @@ import windowImage from "../assets/Window.png";
 import infoSign from "../assets/InfoSign.png";
 import { useNavigate } from "react-router-dom";
 import Auth from "../api/auth";
+import Region from "../api/region";
 
-const InMySphere = () => {
+const Informbureau = () => {
 	const [user, setUser] = useState(null);
+	const [regions, setRegions] = useState([]);
+	const [filteredRegions, setFilteredRegions] = useState([]);
+	const [visibleRegions, setVisibleRegions] = useState([]);
+	const [searchQuery, setSearchQuery] = useState("");
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isRegionsLoading, setIsRegionsLoading] = useState(false);
+	const [isLoadingMore, setIsLoadingMore] = useState(false);
 	const [error, setError] = useState("");
+	const [visibleCount, setVisibleCount] = useState(2); // Начинаем с показа 2 регионов
+	const regionsPerLoad = 3; // Сколько дополнительных регионов загружать за раз
+
 	const navigate = useNavigate();
 	const authRef = useRef(null);
+	const regionRef = useRef(null);
 
 	if (authRef.current === null) {
 		authRef.current = new Auth();
+	}
+
+	if (regionRef.current === null) {
+		regionRef.current = new Region();
 	}
 
 	useEffect(() => {
@@ -55,8 +77,129 @@ const InMySphere = () => {
 				navigate("/login");
 			}
 		}
+
 		validateToken();
 	}, [navigate]);
+
+	useEffect(() => {
+		async function fetchRegions() {
+			if (!isAuthenticated) return;
+
+			setIsRegionsLoading(true);
+			try {
+				const response = await regionRef.current.getRegions();
+				if (response.status === 200) {
+					const regionsData = await response.json();
+					console.log("Получены данные регионов:", regionsData);
+					setRegions(regionsData);
+					setFilteredRegions(regionsData);
+				} else {
+					console.error("Ошибка при получении данных регионов:", response);
+				}
+			} catch (err) {
+				console.error("Ошибка при запросе данных регионов:", err);
+			} finally {
+				setIsRegionsLoading(false);
+			}
+		}
+
+		fetchRegions();
+	}, [isAuthenticated]);
+
+	// Обновление видимых регионов при изменении отфильтрованных регионов или количества видимых
+	useEffect(() => {
+		setVisibleRegions(filteredRegions.slice(0, visibleCount));
+	}, [filteredRegions, visibleCount]);
+
+	// Загрузка дополнительных регионов
+	const loadMoreRegions = () => {
+		setIsLoadingMore(true);
+
+		// Имитация задержки загрузки для лучшего пользовательского опыта
+		setTimeout(() => {
+			setVisibleCount((prevCount) => prevCount + regionsPerLoad);
+			setIsLoadingMore(false);
+		}, 500);
+	};
+
+	// Получение мер поддержки для конкретного региона
+	const fetchRegionDetail = async (regionId) => {
+		if (!regionId) return;
+
+		try {
+			setIsRegionsLoading(true);
+			const response = await regionRef.current.getRegion(regionId);
+			if (response.status === 200) {
+				const supportMeasures = await response.json();
+				console.log(
+					`Получены меры поддержки для региона ${regionId}:`,
+					supportMeasures
+				);
+
+				// Обновляем массив регионов, добавляя меры поддержки для текущего региона
+				setRegions((prevRegions) =>
+					prevRegions.map((region) =>
+						region.id === regionId
+							? {
+									...region,
+									support_measures: Array.isArray(supportMeasures)
+										? supportMeasures
+										: [],
+							  }
+							: region
+					)
+				);
+			}
+		} catch (err) {
+			console.error(
+				`Ошибка при получении мер поддержки для региона ${regionId}:`,
+				err
+			);
+			setError(
+				`Не удалось загрузить меры поддержки для региона. Попробуйте позже.`
+			);
+		} finally {
+			setIsRegionsLoading(false);
+		}
+	};
+
+	// Фильтрация регионов при изменении поискового запроса
+	useEffect(() => {
+		if (!searchQuery.trim()) {
+			setFilteredRegions(regions);
+			return;
+		}
+
+		const filtered = regions.filter((region) => {
+			// Поиск по имени региона
+			if (region.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+				return true;
+			}
+
+			// Поиск по мерам поддержки, если они есть
+			if (region.support_measures) {
+				return region.support_measures.some(
+					(measure) =>
+						(measure.title &&
+							measure.title
+								.toLowerCase()
+								.includes(searchQuery.toLowerCase())) ||
+						(measure.description &&
+							measure.description
+								.toLowerCase()
+								.includes(searchQuery.toLowerCase())) ||
+						(measure.link &&
+							measure.link.toLowerCase().includes(searchQuery.toLowerCase()))
+				);
+			}
+
+			return false;
+		});
+
+		setFilteredRegions(filtered);
+		// При поиске сбрасываем количество видимых регионов, чтобы показать все найденные
+		setVisibleCount(filtered.length);
+	}, [searchQuery, regions]);
 
 	const handleRequest = async () => {
 		if (!isAuthenticated) {
@@ -104,6 +247,10 @@ const InMySphere = () => {
 
 	const handleCloseError = () => {
 		setError("");
+	};
+
+	const handleSearchChange = (event) => {
+		setSearchQuery(event.target.value);
 	};
 
 	return (
@@ -240,9 +387,9 @@ const InMySphere = () => {
 										textAlign: "start",
 									}}
 								>
-									 — Получить информационную поддержку в решении
-									административных и бытовых вопросов в столичном регионе
-									бойцам, их семьям и вынужденным переселенцам
+									— Получить информационную поддержку в решении административных
+									и бытовых вопросов в столичном регионе бойцам, их семьям и
+									вынужденным переселенцам
 								</Typography>
 								<Box
 									component="img"
@@ -300,6 +447,7 @@ const InMySphere = () => {
 							padding: { xs: 3, md: 6 },
 							backgroundColor: "white",
 							color: "black",
+							minHeight: "80vh",
 						}}
 					>
 						<Typography
@@ -307,7 +455,7 @@ const InMySphere = () => {
 							sx={{
 								fontFamily: "Highliner",
 								marginBottom: 4,
-								lineHeight: 0.5,
+								lineHeight: 0.8,
 							}}
 						>
 							Региональные меры поддержки
@@ -321,18 +469,189 @@ const InMySphere = () => {
 								marginBottom: 4,
 							}}
 						>
-							Региональные инициативы обеспечения ветеранов – участников
+							Региональные инициативы обеспечения ветеранов – участников
 							специальной военной операции (СВО), уволенных со службы и членов
 							семей погибших
 						</Typography>
 
 						<TextField
-							label="Поиск"
+							label="Поиск по регионам и мерам поддержки"
 							variant="outlined"
-							sx={{ width: "100%", marginBottom: 2, borderRadius: 20 }}
+							value={searchQuery}
+							onChange={handleSearchChange}
+							sx={{ width: "100%", marginBottom: 4, borderRadius: 20 }}
 						/>
 
-						<Box sx={{ height: 80 }} />
+						{isRegionsLoading && visibleRegions.length === 0 ? (
+							<Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+								<CircularProgress />
+							</Box>
+						) : filteredRegions.length === 0 ? (
+							<Typography
+								sx={{
+									textAlign: "center",
+									fontFamily: "TTTravels",
+									fontSize: 18,
+									my: 4,
+								}}
+							>
+								{searchQuery
+									? "По вашему запросу ничего не найдено"
+									: "Данные о регионах отсутствуют"}
+							</Typography>
+						) : (
+							<Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+								{visibleRegions.map((region, index) => (
+									<Fade
+										key={region.id}
+										in={true}
+										timeout={((index % regionsPerLoad) + 1) * 300}
+										style={{
+											transitionDelay: `${(index % regionsPerLoad) * 150}ms`,
+										}}
+									>
+										<Card
+											elevation={3}
+											sx={{
+												borderRadius: 3,
+												overflow: "hidden",
+											}}
+										>
+											<CardContent sx={{ padding: 3 }}>
+												<Typography
+													variant="h5"
+													sx={{
+														fontFamily: "TTTravels",
+														fontWeight: "bold",
+														mb: 2,
+														lineHeight: 1.2,
+													}}
+												>
+													{region.name}
+												</Typography>
+
+												{!region.support_measures ? (
+													<Button
+														variant="outlined"
+														onClick={() => fetchRegionDetail(region.id)}
+														sx={{
+															fontFamily: "TTTravels",
+															mb: 2,
+															textTransform: "none",
+														}}
+													>
+														Загрузить меры поддержки
+													</Button>
+												) : region.support_measures.length > 0 ? (
+													<List sx={{ width: "100%" }}>
+														{region.support_measures.map((measure, index) => (
+															<React.Fragment key={measure.id || index}>
+																<ListItem
+																	alignItems="flex-start"
+																	sx={{ px: 0 }}
+																>
+																	<ListItemText
+																		primary={
+																			<Typography
+																				sx={{
+																					fontFamily: "TTTravels",
+																					fontWeight: "medium",
+																					fontSize: 18,
+																				}}
+																			>
+																				{measure.title || "Мера поддержки"}
+																			</Typography>
+																		}
+																		secondary={
+																			<Box>
+																				<Typography
+																					component="span"
+																					sx={{
+																						fontFamily: "TTTravels",
+																						mt: 1,
+																						color: "text.primary",
+																						display: "block",
+																					}}
+																				>
+																					{measure.description ||
+																						"Нет описания"}
+																				</Typography>
+																				{measure.link && (
+																					<Typography
+																						component="a"
+																						href={measure.link}
+																						target="_blank"
+																						rel="noopener noreferrer"
+																						sx={{
+																							fontFamily: "TTTravels",
+																							mt: 1,
+																							color: "primary.main",
+																							display: "block",
+																						}}
+																					>
+																						Подробнее
+																					</Typography>
+																				)}
+																			</Box>
+																		}
+																		secondaryTypographyProps={{
+																			component: "div",
+																		}}
+																	/>
+																</ListItem>
+																{index < region.support_measures.length - 1 && (
+																	<Divider component="li" />
+																)}
+															</React.Fragment>
+														))}
+													</List>
+												) : (
+													<Typography
+														sx={{
+															fontFamily: "TTTravels",
+															fontStyle: "italic",
+														}}
+													>
+														Нет доступных мер поддержки для данного региона
+													</Typography>
+												)}
+											</CardContent>
+										</Card>
+									</Fade>
+								))}
+
+								{/* Кнопка "Показать еще" */}
+								{visibleRegions.length < filteredRegions.length && (
+									<Box
+										sx={{ display: "flex", justifyContent: "center", my: 3 }}
+									>
+										<Button
+											variant="outlined"
+											startIcon={<ExpandMore />}
+											onClick={loadMoreRegions}
+											disabled={isLoadingMore}
+											sx={{
+												fontFamily: "TTTravels",
+												textTransform: "none",
+												px: 4,
+											}}
+										>
+											{isLoadingMore ? (
+												<>
+													<CircularProgress size={20} sx={{ mr: 1 }} />
+													Загрузка...
+												</>
+											) : (
+												`Показать ещё ${Math.min(
+													regionsPerLoad,
+													filteredRegions.length - visibleRegions.length
+												)} регионов`
+											)}
+										</Button>
+									</Box>
+								)}
+							</Box>
+						)}
 					</Box>
 				</Box>
 				<Snackbar
@@ -353,4 +672,4 @@ const InMySphere = () => {
 	);
 };
 
-export default InMySphere;
+export default Informbureau;

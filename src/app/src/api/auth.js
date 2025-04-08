@@ -41,15 +41,6 @@ class Auth {
 		} catch (error) {
 			return error.message;
 		}
-		const responseData = await response.json();
-		// временное решение
-		console.log(
-			"Ваш id пользователя для входа в систему:",
-			responseData.user.id
-		);
-		if (response.ok) {
-			localStorage.setItem("token", responseData.token);
-		}
 
 		return response;
 	}

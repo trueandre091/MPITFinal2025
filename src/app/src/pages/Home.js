@@ -2,12 +2,12 @@ import React, { useEffect, useState, useRef } from "react";
 import {
 	Box,
 	Typography,
-	AppBar,
-	Toolbar,
 	Stack,
 	Button,
 	useTheme,
+	IconButton,
 } from "@mui/material";
+import { LogoutOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import GeneralBackground from "../components/GeneralBackground";
 import PageTransition from "../components/PageTransition";
@@ -27,8 +27,6 @@ const Home = () => {
 	}
 
 	useEffect(() => {
-		localStorage.removeItem("registrationData");
-		console.log("Данные регистрации очищены при загрузке Home");
 		async function validateToken() {
 			const token = localStorage.getItem("token");
 			if (token) {
@@ -52,6 +50,12 @@ const Home = () => {
 		}
 	}
 
+	function handleLogout() {
+		authRef.current.logout();
+		localStorage.removeItem("token");
+		setIsAuthenticated(false);
+	}
+
 	return (
 		<GeneralBackground type="home">
 			<PageTransition>
@@ -64,6 +68,14 @@ const Home = () => {
 					paddingY={4}
 				>
 					<Box display="flex" flexDirection="column" gap={5}>
+						{isAuthenticated && (
+							<IconButton
+								onClick={handleLogout}
+								sx={{ position: "absolute", top: 10, right: 10 }}
+							>
+								<LogoutOutlined />
+							</IconButton>
+						)}
 						<Typography
 							align="start"
 							color="common.black"

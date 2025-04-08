@@ -28,8 +28,7 @@ const GameMenu = () => {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [destination, setDestination] = useState("/game-menu");
 	const authRef = useRef(null);
-	const hasNavigatedRef = useRef(false);
-	const timersRef = useRef([]);
+	const [isAnimationComplete, setIsAnimationComplete] = useState(false);
 
 	// Состояния для анимации коня
 	const [horsePosition, setHorsePosition] = useState({
@@ -40,27 +39,6 @@ const GameMenu = () => {
 		opacity: 1,
 	});
 	const [isAnimating, setIsAnimating] = useState(false);
-
-	// Функция для очистки всех таймеров
-	const clearAllTimers = () => {
-		timersRef.current.forEach((timerId) => clearTimeout(timerId));
-		timersRef.current = [];
-	};
-
-	// Функция для безопасного перехода - проверяет, не был ли уже совершен переход
-	const safeNavigate = (path) => {
-		if (!hasNavigatedRef.current) {
-			hasNavigatedRef.current = true;
-			navigate(path);
-		}
-	};
-
-	// Сбрасываем флаг перехода при размонтировании компонента
-	useEffect(() => {
-		return () => {
-			clearAllTimers(); // Очищаем все таймеры при размонтировании
-		};
-	}, []);
 
 	if (authRef.current === null) {
 		authRef.current = new Auth();
@@ -85,14 +63,22 @@ const GameMenu = () => {
 		validateToken();
 	}, []);
 
-	// Функция для анимации коня к определенным координатам
+	// Эффект для перехода на нужную страницу после завершения анимации
+	useEffect(() => {
+		if (isAnimationComplete && destination !== "/game-menu") {
+			navigate(destination);
+			setIsAnimationComplete(false);
+		}
+	}, [isAnimationComplete, destination, navigate]);
+
+	// Упрощенная функция для анимации коня
 	const animateHorse = (path) => {
 		if (isAnimating) return;
 
 		setIsAnimating(true);
-		hasNavigatedRef.current = false; // Сбрасываем флаг перехода при начале новой анимации
-		clearAllTimers(); // Очищаем предыдущие таймеры
+		setIsAnimationComplete(false);
 
+		// Начальное положение
 		setHorsePosition({
 			...horsePosition,
 			transition: "none",
@@ -101,7 +87,8 @@ const GameMenu = () => {
 			top: "41%",
 		});
 
-		const initialTimerId = setTimeout(() => {
+		// Даем время для применения начального стиля без анимации
+		setTimeout(() => {
 			let points = [];
 
 			switch (path) {
@@ -158,46 +145,45 @@ const GameMenu = () => {
 					];
 					break;
 				default:
-					points = [];
+					points = [{ left: "65%", top: "44%", transform: "scaleX(1)" }];
 			}
 
-			// Функция для последовательной анимации через точки
-			const animateSequence = (index) => {
-				if (index >= points.length) {
-					// После завершения анимации переходим на страницу только если не было перехода ранее
-					const finalTimerId = setTimeout(() => {
-						if (!hasNavigatedRef.current) {
-							safeNavigate(destination);
-						}
-						setIsAnimating(false);
-						// Скрываем коня после завершения анимации
-						setHorsePosition({
-							...horsePosition,
-							opacity: 0,
-						});
-					}, 300);
-					timersRef.current.push(finalTimerId);
+			// Функция для последовательной анимации по точкам
+			let currentPointIndex = 0;
+
+			const moveToNextPoint = () => {
+				// Если достигли конца массива точек, завершаем анимацию
+				if (currentPointIndex >= points.length) {
+					// Скрываем коня
+					setHorsePosition((prev) => ({
+						...prev,
+						opacity: 0,
+					}));
+
+					// Завершаем анимацию и устанавливаем флаг для перехода
+					setIsAnimating(false);
+					setIsAnimationComplete(true);
 					return;
 				}
 
-				// Устанавливаем transition для плавной анимации
+				// Задаем новую позицию с анимацией
 				setHorsePosition({
-					...points[index],
+					...points[currentPointIndex],
 					transition: "all 0.6s ease-in-out",
 					opacity: 1,
 					zIndex: 10,
 				});
 
-				// Переходим к следующей точке через задержку
-				const nextTimerId = setTimeout(() => animateSequence(index + 1), 600);
-				timersRef.current.push(nextTimerId);
+				// Увеличиваем индекс для следующей точки
+				currentPointIndex++;
+
+				// Вызываем функцию снова через 600мс (время анимации)
+				setTimeout(moveToNextPoint, 600);
 			};
 
 			// Запускаем анимацию
-			animateSequence(0);
+			moveToNextPoint();
 		}, 50);
-
-		timersRef.current.push(initialTimerId);
 	};
 
 	// Обработчики нажатия на дома с анимацией
@@ -282,10 +268,6 @@ const GameMenu = () => {
 								<Box
 									component="img"
 									src={redHorseGif}
-									onClick={() => {
-										clearAllTimers(); // Очищаем таймеры при клике на лошадь
-										safeNavigate(destination); // Используем безопасную навигацию
-									}}
 									sx={{
 										position: "absolute",
 										width: "auto",
@@ -293,19 +275,14 @@ const GameMenu = () => {
 										zIndex: 5,
 										...horsePosition,
 										userselect: "none",
-										pointerEvents: "auto",
+										pointerEvents: "none",
 										filter: "drop-shadow(0px 3px 5px rgba(0,0,0,0.3))",
-										cursor: "pointer",
 									}}
 								/>
 							) : (
 								<Box
 									component="img"
 									src={redHorse}
-									onClick={() => {
-										clearAllTimers(); // Очищаем таймеры при клике на лошадь
-										safeNavigate(destination); // Используем безопасную навигацию
-									}}
 									sx={{
 										position: "absolute",
 										width: "auto",
@@ -313,9 +290,8 @@ const GameMenu = () => {
 										zIndex: 5,
 										...horsePosition,
 										userselect: "none",
-										pointerEvents: "auto",
+										pointerEvents: "none",
 										filter: "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))",
-										cursor: "pointer",
 									}}
 								/>
 							)}

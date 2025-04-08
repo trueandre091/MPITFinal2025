@@ -146,10 +146,14 @@ const Login = () => {
 		// TODO: ВРЕМЕННОЕ РЕШЕНИЕ
 		const esiaToken = _generateRandomEsiaToken();
 		const response = await auth.register(esiaToken, name, category);
+		const responseData = await response.json();
 		if (response.ok) {
 			console.log("Регистрация успешна");
+			setError(
+				"Ваш id пользователя для входа в систему: " + responseData.user.id
+			);
+			localStorage.setItem("token", responseData.token);
 			clearSavedData();
-			navigate("/game-menu");
 		} else if (response.status in errorService.RegisterErrors) {
 			console.log(
 				"Ошибка регистрации:",
@@ -279,7 +283,16 @@ const Login = () => {
 							<Alert
 								severity="error"
 								variant="outlined"
-								onClose={() => setError("")}
+								onClose={
+									error.startsWith("Ваш id")
+										? () => {
+												navigate("/game-menu");
+												setError("");
+										  }
+										: () => {
+												setError("");
+										  }
+								}
 							>
 								{error}
 							</Alert>

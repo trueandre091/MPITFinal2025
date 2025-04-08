@@ -6,6 +6,8 @@ import hero2 from "../assets/heroes/ivanchenko.png";
 import hero3 from "../assets/heroes/nazarov.png";
 import hero4 from "../assets/heroes/filonenko.png";
 
+import redLine from "../assets/RedLine.png";
+
 const HeroDesk = () => {
 	const theme = useTheme();
 
@@ -35,8 +37,38 @@ const HeroDesk = () => {
 			}}
 		>
 			<HeroCard hero={hero1} text={hero1Text} desc={hero1Desc} />
+			<Box
+				sx={{
+					background: `url(${redLine})`,
+					width: "100%",
+					height: "80px",
+					backgroundRepeat: "no-repeat",
+					backgroundSize: "contain",
+					backgroundPosition: "center",
+				}}
+			></Box>
 			<HeroCard hero={hero2} text={hero2Text} desc={hero2Desc} />
+			<Box
+				sx={{
+					background: `url(${redLine})`,
+					width: "100%",
+					height: "80px",
+					backgroundRepeat: "no-repeat",
+					backgroundSize: "contain",
+					backgroundPosition: "center",
+				}}
+			></Box>
 			<HeroCard hero={hero3} text={hero3Text} desc={hero3Desc} />
+			<Box
+				sx={{
+					background: `url(${redLine})`,
+					width: "100%",
+					height: "80px",
+					backgroundRepeat: "no-repeat",
+					backgroundSize: "contain",
+					backgroundPosition: "center",
+				}}
+			></Box>
 			<HeroCard hero={hero4} text={hero4Text} desc={hero4Desc} />
 		</Box>
 	);
@@ -94,7 +126,7 @@ const HeroCard = ({ hero, text, desc }) => {
 			<Box
 				sx={{
 					marginRight: "-2%",
-					marginBottom: "60px",
+					marginBottom: "30px",
 					width: "102%",
 					height: "100%",
 					backgroundColor: "secondary.light",

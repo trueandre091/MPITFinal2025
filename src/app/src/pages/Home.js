@@ -16,6 +16,7 @@ import OftenQuestions from "../components/OftenQuestions";
 
 import redLeaves from "../assets/RedLeaves.png";
 import redLine from "../assets/RedLine.png";
+import russianLeaders from "../assets/RussianLeaders.png";
 import Auth from "../api/auth";
 
 const Home = () => {
@@ -371,7 +372,7 @@ const Home = () => {
 								lineHeight={0.6}
 								fontSize={130}
 								letterSpacing={8}
-								sx={{ userselect: "none", marginTop: "50px" }}
+								sx={{ userSelect: "none", marginTop: "50px" }}
 								fontFamily="Highliner"
 							>
 								На них равняются
@@ -388,7 +389,11 @@ const Home = () => {
 								lineHeight={0.6}
 								fontSize={130}
 								letterSpacing={8}
-								sx={{ userselect: "none", marginTop: "-50px" }}
+								sx={{
+									userselect: "none",
+									marginTop: "-50px",
+									userSelect: "none",
+								}}
 								fontFamily="Highliner"
 							>
 								Часто задаваемые вопросы
@@ -397,8 +402,62 @@ const Home = () => {
 								<OftenQuestions />
 							</Box>
 						</Box>
+						<Box display="flex" flexDirection="column" gap={3}>
+							<Typography
+								align="start"
+								color="common.black"
+								fontWeight={500}
+								lineHeight={0.6}
+								fontSize={130}
+								letterSpacing={8}
+								sx={{
+									userselect: "none",
+									userSelect: "none",
+								}}
+								fontFamily="Highliner"
+							>
+								Про нас
+							</Typography>
+							<Box
+								sx={{
+									marginTop: "10px",
+									fontSize: "20px",
+									color: "primary.main",
+								}}
+							>
+								<Typography>
+									Пространство, где каждый находит помощь и поддержку. Наша
+									платформа объединяет тех, кто возвращается к мирной жизни
+									после военных действий, семьи военнослужащих и жителей
+									приграничных регионов. Мы стремимся обеспечить адресную
+									помощь, психологическую поддержку и ресурсы для успешной
+									адаптации и интеграции в общество.
+								</Typography>
+							</Box>
+						</Box>
 					</Box>
 				</Stack>
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						backgroundColor: "secondary.light",
+						height: "20%",
+						width: "100%",
+					}}
+				>
+					<Box
+						sx={{
+							background: `url(${russianLeaders})`,
+							backgroundRepeat: "no-repeat",
+							backgroundSize: "contain",
+							backgroundPosition: "center",
+							width: "100%",
+							height: "100%",
+						}}
+					></Box>
+					<Typography>https://лидерыроссии.рф/</Typography>
+				</Box>
 			</PageTransition>
 		</GeneralBackground>
 	);

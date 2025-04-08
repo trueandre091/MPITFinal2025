@@ -1,6 +1,8 @@
 import FormData from "form-data";
 
-const BASE_URL = "http://127.0.0.1:8000/api/auth";
+// При использовании настройки "proxy" в package.json
+// нужно указывать только путь без домена
+const BASE_URL = "/api/auth";
 
 class Auth {
 	async login(esiaToken) {

@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8000/api/regions";
+const BASE_URL = "/api/regions";
 
 class Region {
 	async getRegions() {

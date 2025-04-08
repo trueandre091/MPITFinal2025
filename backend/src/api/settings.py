@@ -1,8 +1,10 @@
 from functools import lru_cache
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+env_path = Path(__file__).parent / '.env.api'
+load_dotenv(dotenv_path=env_path)
 
 class Settings:
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")

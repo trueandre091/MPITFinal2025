@@ -6,10 +6,6 @@
 __pycache__/
 *.py[cod]
 
-# Переменные окружения
-.env.bot
-.env.api
-
 # Docker файлы
 Dockerfile
 

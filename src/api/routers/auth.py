@@ -12,6 +12,8 @@ from api.services.user_service import UserCreate
 from api.models.user import User
 from api.models.esia_token import EsiaToken
 
+from bot.tg.bot import bot as telegram_bot
+
 settings = get_settings()
 router = APIRouter()
 auth_service = AuthService()
@@ -45,13 +47,16 @@ async def register(
 
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def login(
-    esia_token: str = Form(...),
+    # esia_token: str = Form(...),
+    user_id: int = Form(...), # временное решение
     db: Session = Depends(get_db)
 ):
-    esia_token = EsiaToken.get_by_esia_token(db, esia_token)
-    if not esia_token:
-        raise HTTPException(status_code=404, detail="Esia token not found")
-    user = User.get_by_id(db, esia_token.user_id)
+    # esia_token = EsiaToken.get_by_esia_token(db, esia_token)
+    # if not esia_token:
+    #     raise HTTPException(status_code=404, detail="Esia token not found")
+    user = User.get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     if not user.is_active:
         User.update(db, user.id, is_active=True)
     
@@ -91,6 +96,20 @@ async def logout(
     return {"detail": "Logged out"}
 
 
+
+@router.get("/bot", status_code=status.HTTP_200_OK)
+async def get_bot_info(
+    user: User = Depends(auth_service.verify_user),
+    db: Session = Depends(get_db)
+):
+    bot_info = await telegram_bot.get_me()
+    return {
+        "bot": {
+            "id": bot_info.id,
+            "username": bot_info.username,
+            "name": bot_info.first_name
+        }
+    }
 
 
 

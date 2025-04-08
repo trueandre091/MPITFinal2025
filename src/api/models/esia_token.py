@@ -9,7 +9,7 @@ class EsiaToken(Base):
 
     id = Column(BigInteger, primary_key=True, index=True)
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False, unique=True)
-    user = relationship("User", back_populates="esia_token")
+    user = relationship("User", cascade="all, delete", back_populates="esia_token")
     esia_token = Column(String, nullable=False, unique=True)
     created_at = Column(DateTime, default=datetime.now(UTC))
     updated_at = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))

@@ -16,7 +16,7 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
 
     requests = relationship("Request", foreign_keys="Request.user_id", back_populates="user")
-    esia_token = relationship("EsiaToken", foreign_keys="EsiaToken.user_id", back_populates="user", uselist=False)
+    esia_token = relationship("EsiaToken", foreign_keys="EsiaToken.user_id", cascade="all, delete", back_populates="user", uselist=False)
 
     @classmethod
     def create(cls, db: Session, name: str, **kwargs):

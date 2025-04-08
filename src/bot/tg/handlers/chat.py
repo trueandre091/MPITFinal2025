@@ -34,7 +34,7 @@ async def confirm_handler(callback: types.CallbackQuery, state: FSMContext):
     db = next(get_db())
     leader = Leader.get_by_tg_id(db, callback.from_user.id)
     if not leader:
-        await callback.message.answer(CONTENT["confirm"]["errors"][0])
+        await callback.message.answer(CONTENT["confirm"]["errors"][2])
         return
 
     callback_data = callback.data.split("_")

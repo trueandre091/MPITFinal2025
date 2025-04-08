@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from api.seeds.run_seeds import run_all_seeds
 
-from api.routers import auth
+from api.routers import auth, regions
 
 settings = get_settings()
 
@@ -35,11 +35,19 @@ app.add_middleware(
 
 # routes
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-
+app.include_router(regions.router, prefix="/api/regions", tags=["regions"])
 
 @app.get("/")
 async def root():
     return {"detail": "Hello World"}
+
+
+@app.on_event("startup")
+async def startup_db_client():
+    # Существующий код инициализации...
+    
+    # Запускаем заполнение базы данных при запуске приложения
+    run_all_seeds()
 
 
 async def start_api():

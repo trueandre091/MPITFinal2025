@@ -17,6 +17,8 @@ from models.request import Request
 from models.config import Config
 from models.admin import Admin
 from models.esia_token import EsiaToken
+from models.region import Region
+from models.support_measure import SupportMeasure
 # Импортируйте здесь другие модели, если они есть
 
 # this is the Alembic Config object, which provides

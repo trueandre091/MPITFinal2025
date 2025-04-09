@@ -29,6 +29,7 @@ const Login = () => {
 	const [error, setError] = useState("");
 	const [question, setQuestion] = useState(0);
 	const [isLoaded, setIsLoaded] = useState(false);
+	const [isTokenGot, setIsTokenGot] = useState(false);
 
 	const setAndClearError = (error) => {
 		console.log("Ошибка:", error);
@@ -153,6 +154,7 @@ const Login = () => {
 				"Ваш id пользователя для входа в систему: " + responseData.user.id
 			);
 			localStorage.setItem("token", responseData.token);
+			setIsTokenGot(true);
 			clearSavedData();
 		} else if (response.status in errorService.RegisterErrors) {
 			console.log(
@@ -396,7 +398,7 @@ const Login = () => {
 									</Button>
 								</Box>
 							) : (
-								question === 100 && (
+								question === 100 && !isTokenGot && (
 									<Button
 										variant="contained"
 										fontFamily="TTTravels"
@@ -451,7 +453,7 @@ const Login = () => {
 									</Button>
 								</>
 							) : (
-								question === 100 && (
+								question === 100 && !isTokenGot && (
 									<>
 										{esiaToken !== "" ? (
 											<>

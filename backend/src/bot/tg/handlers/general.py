@@ -22,11 +22,17 @@ router = Router()
 async def start_command_handler(message: types.Message, state: FSMContext):
     text = message.text.split()
     db = next(get_db())
+    sticker_sent = False
     if len(text) == 2:
         user = User.get_by_id(db, int(text[1]))
         if user:
             if not user.tg_id:
                 User.update(db, user.id, tg_id=message.from_user.id)
+                await bot.send_sticker(
+                    message.from_user.id,
+                    CONTENT["stickers"]["magic"],
+                )
+                sticker_sent = True
                 await message.answer(
                     CONTENT["start"]["messages"][1],
                     parse_mode="HTML",
@@ -70,6 +76,10 @@ async def start_command_handler(message: types.Message, state: FSMContext):
                     parse_mode="HTML",
                 )
                 try:
+                    await bot.send_sticker(
+                        request.user.tg_id,
+                        CONTENT["stickers"]["liveandwere"],
+                    )
                     await bot.send_message(
                         request.user.tg_id,
                         CONTENT["respond"]["messages"][1].format(
@@ -103,6 +113,8 @@ async def start_command_handler(message: types.Message, state: FSMContext):
     if user:
         await state.update_data(id=user.id)
 
+    if not sticker_sent:
+        await message.answer_sticker(CONTENT["stickers"]["welcome"])
     await message.answer(
         CONTENT["start"]["messages"][0],
         reply_markup=back_buttons(),

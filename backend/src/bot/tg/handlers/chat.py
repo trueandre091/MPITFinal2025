@@ -27,7 +27,7 @@ logger = get_logger(__name__)
 router = Router()
 
 
-@dp.callback_query(lambda c: c.data.split("_")[1] == "confirm")
+@dp.callback_query(lambda c: "confirm" in c.data)
 async def confirm_handler(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
 
@@ -113,6 +113,10 @@ async def chatting_handler(message: types.Message, state: FSMContext):
 
     if message.text and str(request.id) in message.text:
         if message.from_user.id == request.user.tg_id:
+            await bot.send_sticker(
+                message.from_user.id,
+                CONTENT["stickers"]["right"],
+            )
             await message.answer(
                 CONTENT["chatting"]["messages"][0].format(
                     request_id=request.id, name=request.user.name

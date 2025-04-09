@@ -13,10 +13,7 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if not settings.DB_CREATED:
-        create_db()
-        settings.DB_CREATED = True
-
+    # Запуск сидов
     run_all_seeds()
     
     yield

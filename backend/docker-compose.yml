@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build: .
@@ -8,11 +6,31 @@ services:
     env_file:
       - ./src/api/.env.api
       - ./src/bot/.env.bot
+    environment:
+      - POSTGRES_HOST=postgres
+    depends_on:
+      - postgres
     networks:
       - rl-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=and152364
+      - POSTGRES_DB=russian_leaders
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rl-network
+    restart: unless-stopped
 
 networks:
   rl-network:
     driver: bridge
+
+volumes:
+  postgres_data:
 
 

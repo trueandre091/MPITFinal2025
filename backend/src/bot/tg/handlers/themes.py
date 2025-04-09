@@ -82,10 +82,6 @@ async def request_message_handler(message: types.Message, state: FSMContext):
     )
     chat_id = Config.get_by_key(db, "LEADERS_CHAT_ID").value
     try:
-        await bot.send_sticker(
-            chat_id,
-            CONTENT["stickers"]["fly"],
-        )
         await bot.send_message(
             chat_id,
             get_request_card(request),
@@ -103,7 +99,6 @@ async def request_message_handler(message: types.Message, state: FSMContext):
         await state.set_state(UserState.main)
         return
 
-    await message.answer_sticker(CONTENT["stickers"]["mirror"])
     await message.answer(
         CONTENT["request"]["messages"][1],
         reply_markup=back_buttons(),

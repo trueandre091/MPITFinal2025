@@ -7,18 +7,22 @@ from alembic import context
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# Добавляем корректные пути для импортов
+current_dir = os.path.dirname(os.path.abspath(__file__))
+api_dir = os.path.dirname(current_dir)
+src_dir = os.path.dirname(api_dir)
+sys.path.insert(0, src_dir)
 
 # Импортируем модели и настройки из нашего проекта
-from database import Base, SQLALCHEMY_DATABASE_URL
-from models.user import User
-from models.leader import Leader
-from models.request import Request
-from models.config import Config
-from models.admin import Admin
-from models.esia_token import EsiaToken
-from models.region import Region
-from models.support_measure import SupportMeasure
+from api.database import Base, SQLALCHEMY_DATABASE_URL
+from api.models.user import User
+from api.models.leader import Leader
+from api.models.request import Request
+from api.models.config import Config
+from api.models.admin import Admin
+from api.models.esia_token import EsiaToken
+from api.models.region import Region
+from api.models.support_measure import SupportMeasure
 # Импортируйте здесь другие модели, если они есть
 
 # this is the Alembic Config object, which provides
